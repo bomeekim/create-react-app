@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
 // 아래 코드는 유사 자바스크립트 코드임
 class Subject extends Component {
@@ -8,7 +8,16 @@ class Subject extends Component {
       // 컴포넌트를 만들때는 하나의 최상위 태그가 필요하다.
       <header>
         {/* React 는 태그의 attribute 속성을 props 라고 표현한다. */}
-        <h1>{this.props.title}</h1>
+        <h1>
+          <a
+            href="/"
+            onClick={function (e) {
+              e.preventDefault();
+              this.props.onChangePage();
+            }.bind(this)}>
+            {this.props.title}
+          </a>
+        </h1>
         {this.props.sub}
       </header>
     );

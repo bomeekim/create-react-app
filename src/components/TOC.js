@@ -1,5 +1,5 @@
 // React로 코딩할 때는 반드시 React를 import 해주어야한다.
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
 class TOC extends Component {
   render() {
@@ -11,7 +11,15 @@ class TOC extends Component {
       list.push(
         // 반복문을 작성할 때는 key 값이 필요하다.
         <li key={data[i].id}>
-          <a href={"/content/" + data[i].id}>{data[i].title}</a>
+          <a
+            href={'/content/' + data[i].id}
+            data-id={data[i].id}
+            onClick={function (e) {
+              e.preventDefault();
+              this.props.onChangePage(e.target.dataset.id);
+            }.bind(this)}>
+            {data[i].title}
+          </a>
         </li>
       );
       i = i + 1;
