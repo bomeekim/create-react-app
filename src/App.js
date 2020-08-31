@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import TOC from './components/TOC';
-import Content from './components/Content';
+import ReadContent from './components/ReadContent';
+import CreateContent from './components/CreateContent';
 import Subject from './components/Subject';
+import Control from './components/Control';
 import './styles.css';
 
 // React에서 Component를 만드는 코드
@@ -14,6 +16,7 @@ class App extends Component {
     // 2. render() 함수 내에 있는 컴포넌트들의 render() 함수가 호출된다.
     // 3. 화면이 다시 그려지게 된다.
     // => state, props가 바뀌면 화면이 다시 그려진다.
+    this.max_content_id = 3; // ui에 영향을 주지 않으므로 state로 선언하지 않는다.
     this.state = {
       mode: 'welcome',
       selected_content_id: 2,
@@ -33,12 +36,14 @@ class App extends Component {
 
   render() {
     var _title,
-      _desc = null;
+      _desc,
+      _article = null;
 
     switch (this.state.mode) {
       case 'welcome':
         _title = this.state.welcome.title;
         _desc = this.state.welcome.desc;
+        _article = <ReadContent title={_title} desc={_desc}></ReadContent>;
         break;
       case 'read':
         var i = 0;
@@ -53,6 +58,42 @@ class App extends Component {
 
           i = i + 1;
         }
+        _article = <ReadContent title={_title} desc={_desc}></ReadContent>;
+        break;
+      case 'create':
+        _article = (
+          <CreateContent
+            onSubmit={function (_title, _desc) {
+              this.max_content_id = this.max_content_id + 1;
+              /** push, concat 둘 다 배열에 값을 추가할 수 있음
+              push는 원본을 바꿈 -> 큰 규모의 어플리케이션에서는 웬만하면 쓰지 말 것!
+              concat은 원본을 바꾸지 않음 -> 추천! 성능향상!
+              this.state.contents.push({
+                id: this.max_content_id,
+                title: _title,
+                desc: _desc
+              }); */
+
+              /** var _contents = this.state.contents.concat({
+                id: this.max_content_id,
+                title: _title,
+                desc: _desc
+              }); */
+
+              // push를 사용하는 방법 (배열일때만 가능)
+              // ref. 객체를 바꾸고 싶을때? Object.assign({}, 변경할 Object)
+              var newContents = Array.from(this.state.contents);
+              newContents.push({
+                id: this.max_content_id,
+                title: _title,
+                desc: _desc
+              });
+
+              this.setState({
+                contents: newContents
+              });
+            }.bind(this)}></CreateContent>
+        );
         break;
       default:
         break;
@@ -74,7 +115,13 @@ class App extends Component {
             });
           }.bind(this)}
           data={this.state.contents}></TOC>
-        <Content title={_title} desc={_desc}></Content>
+        <Control
+          onChangeMode={function (_mode) {
+            this.setState({
+              mode: _mode
+            });
+          }.bind(this)}></Control>
+        {_article}
       </div>
     );
   }
