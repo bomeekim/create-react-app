@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import TOC from './components/TOC';
 import ReadContent from './components/ReadContent';
 import CreateContent from './components/CreateContent';
+import UpdateContent from './components/UpdateContent';
 import Subject from './components/Subject';
 import Control from './components/Control';
 import './styles.css';
@@ -30,13 +31,16 @@ class App extends Component {
     };
   }
 
-  // 리액트에서 state를 변경하는 방법
-  // [X] this.state.state.mode = 'welcome' 이렇게 작성하면 리액트가 변경을 감지할 수 없다.
-  // [O] this.setState({ mode: 'welcome'})
+  getReadContent() {
+    return this.state.contents.find(
+      (o) => o.id === this.state.selected_content_id
+    );
+  }
 
-  render() {
+  getContent() {
     var _title,
       _desc,
+      _content,
       _article = null;
 
     switch (this.state.mode) {
@@ -46,19 +50,12 @@ class App extends Component {
         _article = <ReadContent title={_title} desc={_desc}></ReadContent>;
         break;
       case 'read':
-        var i = 0;
-        while (i < this.state.contents.length) {
-          var data = this.state.contents[i];
-
-          if (data.id === this.state.selected_content_id) {
-            _title = data.title;
-            _desc = data.desc;
-            break;
-          }
-
-          i = i + 1;
-        }
-        _article = <ReadContent title={_title} desc={_desc}></ReadContent>;
+        _content = this.getReadContent();
+        _article = (
+          <ReadContent
+            title={_content.title}
+            desc={_content.desc}></ReadContent>
+        );
         break;
       case 'create':
         _article = (
@@ -66,39 +63,68 @@ class App extends Component {
             onSubmit={function (_title, _desc) {
               this.max_content_id = this.max_content_id + 1;
               /** push, concat 둘 다 배열에 값을 추가할 수 있음
-              push는 원본을 바꿈 -> 큰 규모의 어플리케이션에서는 웬만하면 쓰지 말 것!
-              concat은 원본을 바꾸지 않음 -> 추천! 성능향상!
-              this.state.contents.push({
-                id: this.max_content_id,
-                title: _title,
-                desc: _desc
-              }); */
+            push는 원본을 바꿈 -> 큰 규모의 어플리케이션에서는 웬만하면 쓰지 말 것!
+            concat은 원본을 바꾸지 않음 -> 추천! 성능향상!
+            this.state.contents.push({
+              id: this.max_content_id,
+              title: _title,
+              desc: _desc
+            }); */
 
               /** var _contents = this.state.contents.concat({
-                id: this.max_content_id,
-                title: _title,
-                desc: _desc
-              }); */
+              id: this.max_content_id,
+              title: _title,
+              desc: _desc
+            }); */
 
               // push를 사용하는 방법 (배열일때만 가능)
               // ref. 객체를 바꾸고 싶을때? Object.assign({}, 변경할 Object)
-              var newContents = Array.from(this.state.contents);
-              newContents.push({
+              var _content = Array.from(this.state.contents);
+              _content.push({
                 id: this.max_content_id,
                 title: _title,
                 desc: _desc
               });
 
               this.setState({
-                contents: newContents
+                mode: 'read',
+                selected_content_id: this.max_content_id,
+                contents: _content
               });
             }.bind(this)}></CreateContent>
+        );
+        break;
+      case 'update':
+        _content = this.getReadContent();
+        _article = (
+          <UpdateContent
+            data={_content}
+            onSubmit={function (_id, _title, _desc) {
+              // 직접 수정하지 않고 복제해서 새로운 배열에 수정함
+              var _contents = Array.from(this.state.contents);
+              var item = _contents.find((o) => o.id === _id);
+              item.title = _title;
+              item.desc = _desc;
+
+              this.setState({
+                mode: 'read',
+                contents: _contents
+              });
+            }.bind(this)}></UpdateContent>
         );
         break;
       default:
         break;
     }
 
+    return _article;
+  }
+
+  // 리액트에서 state를 변경하는 방법
+  // [X] this.state.state.mode = 'welcome' 이렇게 작성하면 리액트가 변경을 감지할 수 없다.
+  // [O] this.setState({ mode: 'welcome'})
+
+  render() {
     return (
       <div className="App">
         <Subject
@@ -121,7 +147,7 @@ class App extends Component {
               mode: _mode
             });
           }.bind(this)}></Control>
-        {_article}
+        {this.getContent()}
       </div>
     );
   }
